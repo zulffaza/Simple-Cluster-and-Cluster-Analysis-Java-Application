@@ -8,6 +8,8 @@ package com.faza.example.simple.cluster.and.cluster.analysis.java.application;
 
 public class Application {
 
+    private static final String DATASET_PATHNAME = "iris.txt";
+
     public static void main(String[] args) {
         // TODO run application logic here
     }
