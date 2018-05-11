@@ -76,7 +76,7 @@ public class Cluster {
         }
     }
 
-    public ClusterBuilder builder(Integer id, List<Iris> irises) {
+    public static ClusterBuilder builder(Integer id, List<Iris> irises) {
         return new ClusterBuilder(id, irises);
     }
 
