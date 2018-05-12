@@ -14,7 +14,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class ClusterResponse {
+public class ClusterCommandResponse {
 
     private List<Cluster> clusters;
 }

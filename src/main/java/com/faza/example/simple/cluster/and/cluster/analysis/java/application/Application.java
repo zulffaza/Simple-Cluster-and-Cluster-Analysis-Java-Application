@@ -3,9 +3,11 @@ package com.faza.example.simple.cluster.and.cluster.analysis.java.application;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.executor.CommandExecutor;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.executor.implementation.CommandExecutorImpl;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.implementation.ClusterCommand;
-import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.model.request.ClusterRequest;
-import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.model.response.ClusterResponse;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.model.request.ClusterCommandRequest;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.model.response.ClusterCommandResponse;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.util.CommandExceptionHelper;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.model.Iris;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.strategy.implementation.CentroidLinkageStrategy;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.util.FilesHelper;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.util.IrisHelper;
 
@@ -33,11 +35,16 @@ public class Application {
         List<Iris> irises = irisHelper.readIrisDataSet(lines);
 
         CommandExecutor commandExecutor = CommandExecutorImpl.getInstance();
+        ClusterCommandRequest clusterCommandRequest = ClusterCommandRequest.builder()
+                .irises(irises)
+                .clusterStrategy(
+                        CentroidLinkageStrategy.getInstance())
+                .build();
 
         try {
-            ClusterResponse clusterResponse = commandExecutor.doExecute(
-                    ClusterCommand.class, ClusterRequest.builder().irises(irises).build());
-            clusterResponse.getClusters().forEach(cluster -> {
+            ClusterCommandResponse clusterCommandResponse = commandExecutor.doExecute(
+                    ClusterCommand.class, clusterCommandRequest);
+            clusterCommandResponse.getClusters().forEach(cluster -> {
                 System.out.println(cluster);
 
                 cluster.getIrises().forEach(iris -> {
@@ -48,7 +55,10 @@ public class Application {
                 });
             });
         } catch (Exception e) {
-            System.out.println("Error running command...");
+            e.printStackTrace();
+
+            CommandExceptionHelper.getInstance()
+                    .printMessage("Error while running ClusterCommand...");
         }
     }
 }
