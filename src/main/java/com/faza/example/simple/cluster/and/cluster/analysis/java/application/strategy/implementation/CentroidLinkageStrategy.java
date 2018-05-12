@@ -47,7 +47,8 @@ public class CentroidLinkageStrategy implements ClusterStrategy {
 
         // TODO create down clusters
         // TODO build centroid for all clusters
-        // TODO
+
+        // TODO do centroid linkage algorithm
 
         return null; // Void object need null return value
     }

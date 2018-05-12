@@ -16,5 +16,7 @@ import java.util.List;
 @Builder
 public class ClusterStrategyRequest {
 
+    private Integer numberOfCluster;
+
     private List<Iris> irises;
 }
