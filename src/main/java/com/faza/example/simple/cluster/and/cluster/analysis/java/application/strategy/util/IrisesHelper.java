@@ -1,7 +1,5 @@
-package com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.implementation;
+package com.faza.example.simple.cluster.and.cluster.analysis.java.application.strategy.util;
 
-import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.Command;
-import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.model.request.CalculateIrisesDistancesRequest;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.model.Iris;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.model.IrisDistance;
 
@@ -11,20 +9,29 @@ import java.util.List;
 /**
  * @author Faza Zulfika P P
  * @version 1.0.0
- * @since 12 May 2018
+ * @since 15 May 2018
  */
 
-public class CalculateIrisesDistancesCommand implements Command<CalculateIrisesDistancesRequest, Void> {
+public class IrisesHelper {
 
-    @Override
-    public Void execute(CalculateIrisesDistancesRequest calculateIrisesDistancesRequest) throws Exception {
-        List<Iris> irises = calculateIrisesDistancesRequest.getIrises();
+    private static IrisesHelper instance;
+
+    private IrisesHelper() {
+
+    }
+
+    public static IrisesHelper getInstance() {
+        if (instance == null)
+            instance = new IrisesHelper();
+
+        return instance;
+    }
+
+    public void calculateIrisesDistances(List<Iris> irises) {
         List<Iris> irisesCopy = new ArrayList<>(irises);
 
         irises.forEach(iris ->
                 calculateIrisDistances(iris, irisesCopy));
-
-        return null; // Void object need null return value
     }
 
     private void calculateIrisDistances(Iris iris, List<Iris> irises) {
@@ -50,7 +57,6 @@ public class CalculateIrisesDistancesCommand implements Command<CalculateIrisesD
 
     private Double calculateDistance(Iris iris, Iris irisCopy) {
         Iris irisTemp = Iris.builder(
-                0,
                 iris.getSepalLength() - irisCopy.getSepalLength(),
                 iris.getSepalWidth() - irisCopy.getSepalWidth(),
                 iris.getPetalLength() - irisCopy.getPetalLength(),

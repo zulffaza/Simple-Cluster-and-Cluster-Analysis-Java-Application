@@ -4,8 +4,7 @@ import com.faza.example.simple.cluster.and.cluster.analysis.java.application.com
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.model.request.ClusterCommandRequest;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.model.response.ClusterCommandResponse;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.strategy.model.request.ClusterStrategyRequest;
-
-import java.util.Collections;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.strategy.model.response.ClusterStrategyResponse;
 
 /**
  * @author Faza Zulfika P P
@@ -17,22 +16,15 @@ public class ClusterCommand implements Command<ClusterCommandRequest, ClusterCom
 
     @Override
     public ClusterCommandResponse execute(ClusterCommandRequest clusterCommandRequest) throws Exception {
-        clusterCommandRequest.getClusterStrategy()
-                .execute(ClusterStrategyRequest.builder()
-                        .irises(
-                                clusterCommandRequest.getIrises())
-                        .build());
-
-        clusterCommandRequest.getIrises()
-                .forEach(iris -> {
-                    System.out.println(iris);
-                    iris.getIrisDistances().forEach(irisDistance ->
-                            System.out.println("\t" + irisDistance));
-                });
+        ClusterStrategyRequest clusterStrategyRequest = ClusterStrategyRequest.builder()
+                .irises(clusterCommandRequest.getIrises())
+                .numberOfCluster(clusterCommandRequest.getNumberOfCluster())
+                .build();
+        ClusterStrategyResponse clusterStrategyResponse = clusterCommandRequest.getClusterStrategy()
+                .execute(clusterStrategyRequest);
 
         return ClusterCommandResponse.builder()
-                .clusters(
-                        Collections.emptyList())
+                .clusters(clusterStrategyResponse.getClusters())
                 .build();
     }
 }

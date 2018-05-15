@@ -1,12 +1,18 @@
 package com.faza.example.simple.cluster.and.cluster.analysis.java.application.strategy.implementation;
 
-import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.executor.CommandExecutor;
-import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.executor.implementation.CommandExecutorImpl;
-import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.implementation.CalculateIrisesDistancesCommand;
-import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.model.request.CalculateIrisesDistancesRequest;
-import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.util.CommandExceptionHelper;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.model.Cluster;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.model.ClusterDistance;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.model.Iris;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.strategy.ClusterStrategy;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.strategy.model.request.ClusterStrategyRequest;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.strategy.model.response.ClusterStrategyResponse;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.strategy.util.ClustersHelper;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.strategy.util.IrisesHelper;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * @author Faza Zulfika P P
@@ -15,6 +21,8 @@ import com.faza.example.simple.cluster.and.cluster.analysis.java.application.str
  */
 
 public class CentroidLinkageStrategy implements ClusterStrategy {
+
+    private static final Integer CLUSTER_INITIAL_ID = 1;
 
     private static CentroidLinkageStrategy instance;
 
@@ -30,26 +38,119 @@ public class CentroidLinkageStrategy implements ClusterStrategy {
     }
 
     @Override
-    public Void execute(ClusterStrategyRequest clusterStrategyRequest) {
-        CommandExecutor commandExecutor = CommandExecutorImpl.getInstance();
-        CalculateIrisesDistancesRequest calculateIrisesDistancesRequest = CalculateIrisesDistancesRequest.builder()
-                .irises(
-                        clusterStrategyRequest.getIrises())
+    public ClusterStrategyResponse execute(ClusterStrategyRequest clusterStrategyRequest) throws Exception {
+        calculateIrisesDistance(clusterStrategyRequest);
+
+        List<Cluster> clusters = createInitialCluster(
+                clusterStrategyRequest.getIrises());
+
+        doCentroidLinkage(clusters, clusterStrategyRequest);
+
+        return ClusterStrategyResponse.builder()
+                .clusters(clusters)
                 .build();
+    }
 
-        try {
-            commandExecutor.doExecute(
-                    CalculateIrisesDistancesCommand.class, calculateIrisesDistancesRequest);
-        } catch (Exception e) {
-            CommandExceptionHelper.getInstance()
-                    .printMessage("Error while running CalculateIrisesDistancesCommand...");
+    private void calculateIrisesDistance(ClusterStrategyRequest clusterStrategyRequest) {
+        IrisesHelper.getInstance()
+                .calculateIrisesDistances(clusterStrategyRequest.getIrises());
+    }
+
+    private List<Cluster> createInitialCluster(List<Iris> irises) {
+        AtomicInteger id = new AtomicInteger(CLUSTER_INITIAL_ID);
+
+        return irises.stream()
+                .map(iris ->
+                        buildCentroidInitialCluster(id.getAndIncrement(), iris))
+                .collect(Collectors.toList());
+    }
+
+    private Cluster buildCentroidInitialCluster(Integer id, Iris iris) {
+        List<Iris> irises = new ArrayList<>();
+        irises.add(iris);
+
+        return Cluster.builder(id, irises)
+                .needCentroid()
+                .build();
+    }
+
+    private Boolean checkClustersSize(List<Cluster> clusters, ClusterStrategyRequest clusterStrategyRequest) {
+        return clusters.size() != clusterStrategyRequest.getNumberOfCluster();
+    }
+
+    private void doCentroidLinkage(List<Cluster> clusters, ClusterStrategyRequest clusterStrategyRequest)
+            throws Exception {
+        ClustersHelper clustersHelper = ClustersHelper.getInstance();
+
+        while (checkClustersSize(clusters, clusterStrategyRequest)) {
+            for (int i = 0; isCentroidLinkageComplete(clusters, clusterStrategyRequest, i); i++) {
+                doCentroidLinkageIteration(clustersHelper, clusters, i);
+            }
         }
+    }
 
-        // TODO create down clusters
-        // TODO build centroid for all clusters
+    private Boolean isCentroidLinkageComplete(List<Cluster> clusters,
+                                              ClusterStrategyRequest clusterStrategyRequest,
+                                              Integer iteration) {
+        return iteration < clusters.size() && checkClustersSize(clusters, clusterStrategyRequest);
+    }
 
-        // TODO do centroid linkage algorithm
+    private void doCentroidLinkageIteration(ClustersHelper clustersHelper, List<Cluster> clusters, Integer iteration)
+            throws Exception {
+        clearCentroidsDistances(clusters);
+        calculateCentroidsDistances(clusters);
+        clustersHelper.buildNewCluster(clusters.get(iteration), clusters);
+    }
 
-        return null; // Void object need null return value
+    private void clearCentroidsDistances(List<Cluster> clusters) {
+        clusters.forEach(cluster ->
+                cluster.getClusterDistances().clear());
+    }
+
+    private void calculateCentroidsDistances(List<Cluster> clusters) {
+        List<Cluster> clustersCopy = new ArrayList<>(clusters);
+
+        clusters.forEach(cluster ->
+                calculateCentroidDistances(cluster, clustersCopy));
+    }
+
+    private void calculateCentroidDistances(Cluster cluster, List<Cluster> clusters) {
+        clusters.forEach(clusterCopy ->
+                calculateCentroidDistance(cluster, clusterCopy));
+    }
+
+    private void calculateCentroidDistance(Cluster cluster, Cluster clusterCopy) {
+        if (!isIrisIdEquals(cluster, clusterCopy)) {
+            ClusterDistance clusterDistance = ClusterDistance.builder()
+                    .id(clusterCopy.getId())
+                    .distance(
+                            calculateDistance(cluster.getCentroid(), clusterCopy.getCentroid()))
+                    .build();
+
+            cluster.addClusterDistance(clusterDistance);
+        }
+    }
+
+    private Boolean isIrisIdEquals(Cluster cluster, Cluster clusterCopy) {
+        return cluster.getId().equals(clusterCopy.getId());
+    }
+
+    private Double calculateDistance(Iris iris, Iris irisCopy) {
+        Iris irisTemp = Iris.builder(
+                iris.getSepalLength() - irisCopy.getSepalLength(),
+                iris.getSepalWidth() - irisCopy.getSepalWidth(),
+                iris.getPetalLength() - irisCopy.getPetalLength(),
+                iris.getPetalWidth() - iris.getPetalWidth()).build();
+
+        return calculateDistance(irisTemp);
+    }
+
+    private Double calculateDistance(Iris iris) {
+        Double distance = Math.pow(iris.getSepalLength(), 2) +
+                Math.pow(iris.getSepalWidth(), 2) +
+                Math.pow(iris.getPetalLength(), 2) +
+                Math.pow(iris.getPetalWidth(), 2);
+
+        return Math.sqrt(distance);
     }
 }
