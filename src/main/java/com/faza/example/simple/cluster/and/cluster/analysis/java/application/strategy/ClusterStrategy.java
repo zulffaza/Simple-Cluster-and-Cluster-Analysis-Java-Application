@@ -1,6 +1,7 @@
 package com.faza.example.simple.cluster.and.cluster.analysis.java.application.strategy;
 
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.strategy.model.request.ClusterStrategyRequest;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.strategy.model.response.ClusterStrategyResponse;
 
 /**
  * @author Faza Zulfika P P
@@ -8,5 +9,5 @@ import com.faza.example.simple.cluster.and.cluster.analysis.java.application.str
  * @since 11 May 2018
  */
 
-public interface ClusterStrategy extends Strategy<ClusterStrategyRequest, Void> {
+public interface ClusterStrategy extends Strategy<ClusterStrategyRequest, ClusterStrategyResponse> {
 }

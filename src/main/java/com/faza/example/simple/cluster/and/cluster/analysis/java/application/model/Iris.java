@@ -56,6 +56,10 @@ public class Iris {
             this(0, 0.0, 0.0, 0.0, 0.0);
         }
 
+        private IrisBuilder(Double sepalLength, Double sepalWidth, Double petalLength, Double petalWidth) {
+            this(0, sepalLength, sepalWidth, petalLength, petalWidth);
+        }
+
         private IrisBuilder(Integer id, Double sepalLength, Double sepalWidth, Double petalLength, Double petalWidth) {
             this.id = id;
 
@@ -77,6 +81,10 @@ public class Iris {
 
     public static IrisBuilder builder() {
         return new IrisBuilder();
+    }
+
+    public static IrisBuilder builder(Double sepalLength, Double sepalWidth, Double petalLength, Double petalWidth) {
+        return new IrisBuilder(sepalLength, sepalWidth, petalLength, petalWidth);
     }
 
     public static IrisBuilder builder(Integer id, Double sepalLength, Double sepalWidth, Double petalLength, Double petalWidth) {

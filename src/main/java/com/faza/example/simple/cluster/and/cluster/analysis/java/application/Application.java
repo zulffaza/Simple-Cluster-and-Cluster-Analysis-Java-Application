@@ -23,10 +23,10 @@ import java.util.List;
 public class Application {
 
     private static final String DATASET_PATHNAME = "iris.txt";
+    private static final Integer NUMBER_OF_CLUSTER = 3;
+
 
     public static void main(String[] args) {
-        // TODO run application logic here
-
         FilesHelper filesHelper = FilesHelper.getInstance();
         IrisHelper irisHelper = IrisHelper.getInstance();
 
@@ -39,21 +39,14 @@ public class Application {
                 .irises(irises)
                 .clusterStrategy(
                         CentroidLinkageStrategy.getInstance())
+                .numberOfCluster(NUMBER_OF_CLUSTER)
                 .build();
 
         try {
             ClusterCommandResponse clusterCommandResponse = commandExecutor.doExecute(
                     ClusterCommand.class, clusterCommandRequest);
-            clusterCommandResponse.getClusters().forEach(cluster -> {
-                System.out.println(cluster);
-
-                cluster.getIrises().forEach(iris -> {
-                    System.out.println("\t" + iris);
-
-                    iris.getIrisDistances().forEach(irisDistance ->
-                            System.out.println("\t\t" + irisDistance));
-                });
-            });
+            clusterCommandResponse.getClusters().forEach(cluster ->
+                    System.out.println(cluster + " : " + cluster.getIrises().size()));
         } catch (Exception e) {
             e.printStackTrace();
 
