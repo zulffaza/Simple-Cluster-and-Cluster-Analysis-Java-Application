@@ -55,6 +55,10 @@ public class Cluster {
         private List<Iris> irises;
         private List<ClusterDistance> clusterDistances = new ArrayList<>();
 
+        private ClusterBuilder(List<Iris> irises) {
+            this(0, irises);
+        }
+
         private ClusterBuilder(Integer id, List<Iris> irises) {
             this.id = id;
 
@@ -74,6 +78,10 @@ public class Cluster {
         public Cluster build() {
             return new Cluster(this);
         }
+    }
+
+    public static ClusterBuilder builder(List<Iris> irises) {
+        return new ClusterBuilder(irises);
     }
 
     public static ClusterBuilder builder(Integer id, List<Iris> irises) {

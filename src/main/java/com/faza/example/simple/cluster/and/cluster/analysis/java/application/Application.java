@@ -2,10 +2,17 @@ package com.faza.example.simple.cluster.and.cluster.analysis.java.application;
 
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.executor.CommandExecutor;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.executor.implementation.CommandExecutorImpl;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.implementation.CalculateErrorRatioCommand;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.implementation.ClusterCommand;
-import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.model.request.ClusterRequest;
-import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.model.response.ClusterResponse;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.model.request.CalculateErrorRatioCommandRequest;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.model.request.ClusterCommandRequest;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.model.response.CalculateErrorRatioCommandResponse;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.model.response.ClusterCommandResponse;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.util.CommandExceptionHelper;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.model.Cluster;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.model.Iris;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.strategy.implementation.CentroidLinkageStrategy;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.util.ClusterHelper;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.util.FilesHelper;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.util.IrisHelper;
 
@@ -23,32 +30,51 @@ public class Application {
     private static final String DATASET_PATHNAME = "iris.txt";
 
     public static void main(String[] args) {
-        // TODO run application logic here
-
         FilesHelper filesHelper = FilesHelper.getInstance();
         IrisHelper irisHelper = IrisHelper.getInstance();
+        ClusterHelper clusterHelper = ClusterHelper.getInstance();
 
         InputStream inputStream = filesHelper.getResourceFileStream(DATASET_PATHNAME);
         List<String> lines = filesHelper.readFileLines(inputStream);
         List<Iris> irises = irisHelper.readIrisDataSet(lines);
+        List<Cluster> realClusters = clusterHelper.readClusterDataSet(lines);
 
         CommandExecutor commandExecutor = CommandExecutorImpl.getInstance();
+        ClusterCommandRequest clusterCommandRequest = ClusterCommandRequest.builder()
+                .irises(irises)
+                .clusterStrategy(
+                        CentroidLinkageStrategy.getInstance())
+                .numberOfCluster(realClusters.size())
+                .build();
+
+        ClusterCommandResponse clusterCommandResponse = ClusterCommandResponse.builder()
+                .build();
 
         try {
-            ClusterResponse clusterResponse = commandExecutor.doExecute(
-                    ClusterCommand.class, ClusterRequest.builder().irises(irises).build());
-            clusterResponse.getClusters().forEach(cluster -> {
-                System.out.println(cluster);
+            clusterCommandResponse = commandExecutor.doExecute(
+                    ClusterCommand.class, clusterCommandRequest);
 
-                cluster.getIrises().forEach(iris -> {
-                    System.out.println("\t" + iris);
-
-                    iris.getIrisDistances().forEach(irisDistance ->
-                            System.out.println("\t\t" + irisDistance));
-                });
-            });
+            clusterHelper.printClusters(clusterCommandResponse.getClusters());
         } catch (Exception e) {
-            System.out.println("Error running command...");
+            CommandExceptionHelper.getInstance()
+                    .printMessage("Error while running ClusterCommand...");
+        }
+
+        System.out.println("");
+
+        CalculateErrorRatioCommandRequest calculateErrorRatioCommandRequest = CalculateErrorRatioCommandRequest.builder()
+                .realClusters(realClusters)
+                .clusters(clusterCommandResponse.getClusters())
+                .build();
+
+        try {
+            CalculateErrorRatioCommandResponse calculateErrorRatioCommandResponse = commandExecutor.doExecute(
+                    CalculateErrorRatioCommand.class, calculateErrorRatioCommandRequest);
+
+            System.out.println("Error ratio : " + calculateErrorRatioCommandResponse.getErrorRatio());
+        } catch (Exception e) {
+            CommandExceptionHelper.getInstance()
+                    .printMessage("Error while running ClusterCommand...");
         }
     }
 }
