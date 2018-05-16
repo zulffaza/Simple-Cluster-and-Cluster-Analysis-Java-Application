@@ -3,6 +3,7 @@ package com.faza.example.simple.cluster.and.cluster.analysis.java.application.co
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.Command;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.model.request.CalculateErrorRatioCommandRequest;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.model.response.CalculateErrorRatioCommandResponse;
+import com.faza.example.simple.cluster.and.cluster.analysis.java.application.command.util.PermutationHelper;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.model.Cluster;
 import com.faza.example.simple.cluster.and.cluster.analysis.java.application.model.Iris;
 
@@ -22,15 +23,16 @@ public class CalculateErrorRatioCommand implements
 
     private static final Integer FIRST_CLUSTER = 1;
     private static final Integer DEFAULT_NUMBER_OF_ERROR = 0;
-    private static final Integer INCREMENT = 1;
 
     @Override
     public CalculateErrorRatioCommandResponse execute(
             CalculateErrorRatioCommandRequest calculateErrorRatioCommandRequest) throws Exception {
         List<Double> errors = new ArrayList<>();
+        List<List<Integer>> permutations = createPermutations(
+                calculateErrorRatioCommandRequest.getRealClusters().size());
 
-        for (int i = 0; i < calculateErrorRatioCommandRequest.getRealClusters().size(); i++)
-            searchErrors(i, errors, calculateErrorRatioCommandRequest);
+        permutations.forEach(permutation ->
+                searchErrors(permutation, errors, calculateErrorRatioCommandRequest));
 
         Double minimumError = searchMinimumError(errors);
 
@@ -39,12 +41,27 @@ public class CalculateErrorRatioCommand implements
                 .build();
     }
 
-    private void searchErrors(Integer searchIteration, List<Double> errors,
+    private List<List<Integer>> createPermutations(Integer size) {
+        PermutationHelper permutationHelper = PermutationHelper.getInstance();
+        List<Integer> labels = createLabels(size);
+
+        return permutationHelper.generate(size, labels);
+    }
+
+    private List<Integer> createLabels(Integer size) {
+        List<Integer> labels = new ArrayList<>();
+
+        for (int i = FIRST_CLUSTER; i <= size; i++)
+            labels.add(i);
+
+        return labels;
+    }
+
+    private void searchErrors(List<Integer> permutations, List<Double> errors,
                               CalculateErrorRatioCommandRequest calculateErrorRatioCommandRequest) {
         AtomicInteger numberOfError = new AtomicInteger(DEFAULT_NUMBER_OF_ERROR);
-        Integer firstId = searchIteration + INCREMENT;
 
-        changeClusterId(firstId, calculateErrorRatioCommandRequest.getClusters());
+        changeClusterId(permutations, calculateErrorRatioCommandRequest.getClusters());
         calculateErrorRatioCommandRequest.getRealClusters().forEach(cluster ->
                 searchFromIris(numberOfError, cluster, calculateErrorRatioCommandRequest.getClusters()));
 
@@ -53,22 +70,9 @@ public class CalculateErrorRatioCommand implements
         errors.add(error);
     }
 
-    private void changeClusterId(Integer firstId, List<Cluster> clusters) {
-        AtomicInteger id = new AtomicInteger(firstId);
-
-        clusters.forEach(cluster -> {
-            setClusterId(id.getAndIncrement(), cluster);
-            checkClusterId(id, clusters);
-        });
-    }
-
-    private void setClusterId(Integer id, Cluster cluster) {
-        cluster.setId(id);
-    }
-
-    private void checkClusterId(AtomicInteger id, List<Cluster> clusters) {
-        if (id.get() > clusters.size())
-            id.set(FIRST_CLUSTER);
+    private void changeClusterId(List<Integer> permutations, List<Cluster> clusters) {
+        for (int i = 0; i < clusters.size(); i++)
+            clusters.get(i).setId(permutations.get(i));
     }
 
     private void searchFromIris(AtomicInteger numberOfError, Cluster cluster, List<Cluster> clusters) {

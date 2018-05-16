@@ -107,4 +107,13 @@ public class ClusterHelper {
         clusters.sort(
                 Comparator.comparingInt(Cluster::getId));
     }
+
+    public void printClusters(List<Cluster> clusters) {
+        IrisHelper irisHelper = IrisHelper.getInstance();
+
+        clusters.forEach(cluster -> {
+            System.out.println(cluster);
+            irisHelper.printIrises(cluster.getIrises());
+        });
+    }
 }

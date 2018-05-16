@@ -54,12 +54,7 @@ public class Application {
             clusterCommandResponse = commandExecutor.doExecute(
                     ClusterCommand.class, clusterCommandRequest);
 
-            clusterCommandResponse.getClusters().forEach(cluster -> {
-                System.out.println(cluster);
-
-                cluster.getIrises().forEach(iris ->
-                        System.out.println("\t" + iris));
-            });
+            clusterHelper.printClusters(clusterCommandResponse.getClusters());
         } catch (Exception e) {
             CommandExceptionHelper.getInstance()
                     .printMessage("Error while running ClusterCommand...");

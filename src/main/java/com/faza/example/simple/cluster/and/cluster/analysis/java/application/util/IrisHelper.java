@@ -61,4 +61,9 @@ public class IrisHelper {
                 doubles.get(PETAL_LENGTH_INDEX),
                 doubles.get(PETAL_WIDTH_INDEX)).build();
     }
+
+    public void printIrises(List<Iris> irises) {
+        irises.forEach(iris ->
+                System.out.println("\t" + iris));
+    }
 }
