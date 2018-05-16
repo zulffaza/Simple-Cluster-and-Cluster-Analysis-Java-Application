@@ -7,8 +7,14 @@
     <groupId>com.faza.example</groupId>
     <artifactId>simple-cluster-and-cluster-analysis-java-application</artifactId>
     <version>1.0.0-SNAPSHOT</version>
+    <modules>
+        <module>simple-cluster-and-cluster-analysis-java-application-model</module>
+        <module>simple-cluster-and-cluster-analysis-java-application-strategy</module>
+        <module>simple-cluster-and-cluster-analysis-java-application-command</module>
+        <module>simple-cluster-and-cluster-analysis-java-application-main</module>
+    </modules>
 
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <name>Simple Cluster and Cluster Analysis Java Application</name>
     <description>
