@@ -39,8 +39,6 @@ public class CentroidLinkageStrategy implements ClusterStrategy {
 
     @Override
     public ClusterStrategyResponse execute(ClusterStrategyRequest clusterStrategyRequest) throws Exception {
-        calculateIrisesDistance(clusterStrategyRequest);
-
         List<Cluster> clusters = createInitialCluster(
                 clusterStrategyRequest.getIrises());
 
@@ -49,11 +47,6 @@ public class CentroidLinkageStrategy implements ClusterStrategy {
         return ClusterStrategyResponse.builder()
                 .clusters(clusters)
                 .build();
-    }
-
-    private void calculateIrisesDistance(ClusterStrategyRequest clusterStrategyRequest) {
-        IrisesHelper.getInstance()
-                .calculateIrisesDistances(clusterStrategyRequest.getIrises());
     }
 
     private List<Cluster> createInitialCluster(List<Iris> irises) {
