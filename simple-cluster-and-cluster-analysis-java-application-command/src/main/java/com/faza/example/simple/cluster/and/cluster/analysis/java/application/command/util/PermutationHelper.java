@@ -12,6 +12,10 @@ import java.util.List;
 public class PermutationHelper {
 
     private static final Integer PERMUTATION_COMPLETED = 1;
+    private static final Integer MINUS_NUMBER = 1;
+    private static final Integer FIRST_INDEX = 0;
+    private static final Integer MODULUS_NUMBER = 2;
+    private static final Integer EVEN_RESULT = 0;
 
     private static PermutationHelper instance;
 
@@ -45,9 +49,9 @@ public class PermutationHelper {
     }
 
     private void doGenerate(Integer size, List<Integer> labels, List<List<Integer>> permutations) {
-        Integer sizeMinusOne = size - 1;
+        Integer sizeMinusOne = size - MINUS_NUMBER;
 
-        for (int i = 0; i < sizeMinusOne; i++) {
+        for (Integer i = FIRST_INDEX; i < sizeMinusOne; i++) {
             generate(sizeMinusOne, labels, permutations);
             swapValue(getIndexToSwap(i, size), sizeMinusOne, labels);
         }
@@ -56,11 +60,11 @@ public class PermutationHelper {
     }
 
     private Boolean isEven(Integer size) {
-        return size % 2 == 0;
+        return size % MODULUS_NUMBER == EVEN_RESULT;
     }
 
     private Integer getIndexToSwap(Integer iteration, Integer size) {
-        return isEven(size) ? iteration : 0;
+        return isEven(size) ? iteration : FIRST_INDEX;
     }
 
     private void swapValue(Integer from, Integer to, List<Integer> labels) {
