@@ -69,11 +69,6 @@ public class Iris {
             this.petalWidth = petalWidth;
         }
 
-        public IrisBuilder setIrisDistances(List<IrisDistance> irisDistances) {
-            this.irisDistances = irisDistances;
-            return this;
-        }
-
         public Iris build() {
             return new Iris(this);
         }
@@ -91,31 +86,13 @@ public class Iris {
         return new IrisBuilder(id, sepalLength, sepalWidth, petalLength, petalWidth);
     }
 
-    public void setIrisDistances(List<IrisDistance> irisDistances) {
-        this.irisDistances = irisDistances;
-        sortIrisDistance();
-    }
-
-    public void addIrisDistance(IrisDistance irisDistance) {
-        this.irisDistances.add(irisDistance);
-        sortIrisDistance();
-    }
-
-    public IrisDistance getIrisDistance(Integer id) {
-        return this.irisDistances.stream()
-                .filter(irisDistance ->
-                        isIdEquals(irisDistance.getId(), id))
-                .findFirst()
-                .orElse(null);
-    }
-
     private void sortIrisDistance() {
         this.irisDistances.sort(
                 Comparator.comparingInt(IrisDistance::getId));
     }
 
-    private Boolean isIdEquals(Integer id, Integer searchId) {
-        return id.equals(searchId);
+    public Boolean isIdEquals(Integer searchId) {
+        return this.id.equals(searchId);
     }
 
     @Override

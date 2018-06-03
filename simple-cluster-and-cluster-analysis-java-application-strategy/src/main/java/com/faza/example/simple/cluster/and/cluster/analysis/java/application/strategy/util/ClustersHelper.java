@@ -27,34 +27,40 @@ public class ClustersHelper {
         return instance;
     }
 
-    public void buildNewCluster(Cluster cluster, List<Cluster> clusters) throws Exception {
-        Integer clusterId = cluster.getId();
-        Integer nearestClusterId = searchNearestClusterId(cluster);
+    public void buildNewCluster(List<Cluster> clusters) throws Exception {
+        Cluster cluster = clusters.stream()
+                .min(Comparator.comparingDouble(this::getMinDistance))
+                .orElseThrow(Exception::new);
 
-        checkAndMergeNearestCluster(clusterId, nearestClusterId, clusters);
+        ClusterDistance clusterDistance = getMinClusterDistance(cluster);
+
+        mergeNearestCluster(cluster, clusterDistance.getId(), clusters);
     }
 
-    private Integer searchNearestClusterId(Cluster cluster) throws Exception {
-        return cluster.getClusterDistances().stream()
-                .min(Comparator.comparingDouble(ClusterDistance::getDistance))
-                .orElseThrow(Exception::new)
-                .getId();
+    private Double getMinDistance(Cluster cluster) {
+        Double distance;
+
+        try {
+            distance = getMinClusterDistance(cluster)
+                    .getDistance();
+        } catch (Exception e) {
+            distance = null;
+        }
+
+        return distance;
     }
 
-    private void checkAndMergeNearestCluster(Integer clusterId, Integer nearestClusterId, List<Cluster> clusters)
+    private ClusterDistance getMinClusterDistance(Cluster cluster) {
+        return cluster.getClusterDistances()
+                .stream()
+                .min(Comparator.comparingDouble(
+                        ClusterDistance::getDistance))
+                .orElse(null);
+    }
+
+    private void mergeNearestCluster(Cluster cluster, Integer nearestClusterId, List<Cluster> clusters)
             throws Exception {
         Cluster nearestCluster = findCluster(nearestClusterId, clusters);
-        Integer secondNearestClusterId = searchNearestClusterId(nearestCluster);
-
-        if (clusterId.equals(secondNearestClusterId))
-            mergeNearestCluster(clusterId, nearestCluster, clusters);
-        else
-            checkAndMergeNearestCluster(nearestClusterId, secondNearestClusterId, clusters);
-    }
-
-    private void mergeNearestCluster(Integer clusterId, Cluster nearestCluster, List<Cluster> clusters)
-            throws Exception {
-        Cluster cluster = findCluster(clusterId, clusters);
         nearestCluster.getIrises()
                 .forEach(cluster::addIris);
         clusters.remove(nearestCluster);
@@ -63,12 +69,8 @@ public class ClustersHelper {
     private Cluster findCluster(Integer clusterId, List<Cluster> clusters) throws Exception {
         return clusters.stream()
                 .filter(cluster ->
-                        isIdEquals(cluster.getId(), clusterId))
+                        cluster.isIdEquals(clusterId))
                 .findFirst()
                 .orElseThrow(Exception::new);
-    }
-
-    private Boolean isIdEquals(Integer id, Integer searchId) {
-        return id.equals(searchId);
     }
 }

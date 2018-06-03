@@ -56,6 +56,7 @@ public class Application {
 
             clusterHelper.printClusters(clusterCommandResponse.getClusters());
         } catch (Exception e) {
+            e.printStackTrace();
             CommandExceptionHelper.getInstance()
                     .printMessage("Error while running ClusterCommand...");
         }

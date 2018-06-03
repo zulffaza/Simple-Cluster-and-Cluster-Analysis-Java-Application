@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 public class CentroidLinkageStrategy implements ClusterStrategy {
 
     private static final Integer CLUSTER_INITIAL_ID = 1;
-    private static final Integer FIRST_INDEX = 0;
 
     private static CentroidLinkageStrategy instance;
 
@@ -77,23 +76,15 @@ public class CentroidLinkageStrategy implements ClusterStrategy {
         ClustersHelper clustersHelper = ClustersHelper.getInstance();
 
         while (checkClustersSize(clusters, clusterStrategyRequest)) {
-            for (Integer i = FIRST_INDEX; isCentroidLinkageComplete(clusters, clusterStrategyRequest, i); i++) {
-                doCentroidLinkageIteration(clustersHelper, clusters, i);
-            }
+            doCentroidLinkageIteration(clustersHelper, clusters);
         }
     }
 
-    private Boolean isCentroidLinkageComplete(List<Cluster> clusters,
-                                              ClusterStrategyRequest clusterStrategyRequest,
-                                              Integer iteration) {
-        return iteration < clusters.size() && checkClustersSize(clusters, clusterStrategyRequest);
-    }
-
-    private void doCentroidLinkageIteration(ClustersHelper clustersHelper, List<Cluster> clusters, Integer iteration)
+    private void doCentroidLinkageIteration(ClustersHelper clustersHelper, List<Cluster> clusters)
             throws Exception {
         clearCentroidsDistances(clusters);
         calculateCentroidsDistances(clusters);
-        clustersHelper.buildNewCluster(clusters.get(iteration), clusters);
+        clustersHelper.buildNewCluster(clusters);
     }
 
     private void clearCentroidsDistances(List<Cluster> clusters) {

@@ -70,11 +70,6 @@ public class Cluster {
             return this;
         }
 
-        public ClusterBuilder setClusterDistances(List<ClusterDistance> clusterDistances) {
-            this.clusterDistances = clusterDistances;
-            return this;
-        }
-
         public Cluster build() {
             return new Cluster(this);
         }
@@ -88,13 +83,6 @@ public class Cluster {
         return new ClusterBuilder(id, irises);
     }
 
-    public void setIrises(List<Iris> irises) {
-        this.irises = irises;
-        sortIrises();
-
-        buildCentroid();
-    }
-
     public void addIris(Iris iris) {
         this.irises.add(iris);
         sortIrises();
@@ -102,30 +90,9 @@ public class Cluster {
         buildCentroid();
     }
 
-    public Iris getIris(Integer id) {
-        return this.irises.stream()
-                .filter(iris ->
-                        isIdEquals(iris.getId(), id))
-                .findFirst()
-                .orElse(null);
-    }
-
-    public void setClusterDistances(List<ClusterDistance> clusterDistances) {
-        this.clusterDistances = clusterDistances;
-        sortClusterDistances();
-    }
-
     public void addClusterDistance(ClusterDistance clusterDistance) {
         this.clusterDistances.add(clusterDistance);
         sortClusterDistances();
-    }
-
-    public ClusterDistance getClusterDistance(Integer id) {
-        return this.clusterDistances.stream()
-                .filter(clusterDistance ->
-                        isIdEquals(clusterDistance.getId(), id))
-                .findFirst()
-                .orElse(null);
     }
 
     private void buildCentroid() {
@@ -165,8 +132,8 @@ public class Cluster {
                 Comparator.comparingInt(ClusterDistance::getId));
     }
 
-    private Boolean isIdEquals(Integer id, Integer searchId) {
-        return id.equals(searchId);
+    public Boolean isIdEquals(Integer searchId) {
+        return this.id.equals(searchId);
     }
 
     @Override
